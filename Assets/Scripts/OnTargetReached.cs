@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class OnTargetReached : MonoBehaviour
 {
     // public ConfigurableJoint joint;
-    public float threshold = 0.02f;
+    public float threshold = 0.02f;//between slider object and target
     public Transform target;
     public UnityEvent onReached;
     private bool wasReached = false;
@@ -23,7 +23,7 @@ public class OnTargetReached : MonoBehaviour
             wasReached = false;
         }
 
-        // my way
+        // there might be a better way to detect full pull. but im not doing it for now
 
         // if (Mathf.Abs(joint.transform.localPosition.x) >= joint.linearLimit.limit)
         // {
