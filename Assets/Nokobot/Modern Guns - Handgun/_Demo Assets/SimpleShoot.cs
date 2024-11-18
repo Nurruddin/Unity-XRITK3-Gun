@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 [AddComponentMenu("Nokobot/Modern Guns/Simple Shoot")]
 public class SimpleShoot : MonoBehaviour
@@ -11,15 +14,57 @@ public class SimpleShoot : MonoBehaviour
     public GameObject muzzleFlashPrefab;
 
     [Header("Location Refrences")]
-    [SerializeField] private Animator gunAnimator;
-    [SerializeField] private Transform barrelLocation;
-    [SerializeField] private Transform casingExitLocation;
+    [SerializeField]
+    private Animator gunAnimator;
+
+    [SerializeField]
+    private Transform barrelLocation;
+
+    [SerializeField]
+    private Transform casingExitLocation;
 
     [Header("Settings")]
     [Tooltip("Specify time to destory the casing object")] [SerializeField] private float destroyTimer = 2f;
     [Tooltip("Bullet Speed")] [SerializeField] private float shotPower = 500f;
     [Tooltip("Casing Ejection Speed")] [SerializeField] private float ejectPower = 150f;
+    // new code
+    [SerializeField] AudioSource source;
 
+    [SerializeField] AudioClip fireSound;
+
+    [SerializeField] AudioClip reloadSound;
+
+    [SerializeField] AudioClip noAmmoSound;
+
+    public Magazine magazine;
+    public XRBaseInteractor socketInteractor;
+    private bool hasSlide = true;
+
+    public void AddMagazine(SelectEnterEventArgs interactable)
+    {
+        magazine = interactable.interactableObject.transform.gameObject.GetComponent<Magazine>();
+        if (magazine != null)
+        {
+            source.PlayOneShot(reloadSound);
+            hasSlide = false;
+        }
+        else
+        {
+            Debug.LogWarning("Magazine component not found on the interacted object.");//might need this
+        }
+
+    }
+
+    public void RemoveMagazine(SelectExitEventArgs interactable)
+    {
+        magazine = null;
+        source.PlayOneShot(reloadSound);
+    }
+
+    public void Slide() {
+        hasSlide = true;
+        source.PlayOneShot(reloadSound);
+     }
 
     void Start()
     {
@@ -28,6 +73,9 @@ public class SimpleShoot : MonoBehaviour
 
         if (gunAnimator == null)
             gunAnimator = GetComponentInChildren<Animator>();
+
+        socketInteractor.selectEntered.AddListener(AddMagazine);
+        socketInteractor.selectExited.AddListener(RemoveMagazine);
     }
 
     void Update()
@@ -40,18 +88,32 @@ public class SimpleShoot : MonoBehaviour
         // }
     }
 
-    void VRShoot(){
-        gunAnimator.Play("Fire");
-        Shoot();
+    public void VRShoot()
+    {
+        if (magazine && magazine.bulletCount > 0 && hasSlide)
+        {
+            gunAnimator.SetTrigger("Fire");
+        }
+        else
+        {
+            source.PlayOneShot(noAmmoSound);
+        }
     }
+
     //This function creates the bullet behavior
     void Shoot()
     {
+        magazine.bulletCount--;
+        source.PlayOneShot(fireSound);
         if (muzzleFlashPrefab)
         {
             //Create the muzzle flash
             GameObject tempFlash;
-            tempFlash = Instantiate(muzzleFlashPrefab, barrelLocation.position, barrelLocation.rotation);
+            tempFlash = Instantiate(
+                muzzleFlashPrefab,
+                barrelLocation.position,
+                barrelLocation.rotation
+            );
 
             //Destroy the muzzle flash effect
             Destroy(tempFlash, destroyTimer);
@@ -59,11 +121,14 @@ public class SimpleShoot : MonoBehaviour
 
         //cancels if there's no bullet prefeb
         if (!bulletPrefab)
-        { return; }
+        {
+            return;
+        }
 
         // Create a bullet and add force on it in direction of the barrel
-        Instantiate(bulletPrefab, barrelLocation.position, barrelLocation.rotation).GetComponent<Rigidbody>().AddForce(barrelLocation.forward * shotPower);
-
+        Instantiate(bulletPrefab, barrelLocation.position, barrelLocation.rotation)
+            .GetComponent<Rigidbody>()
+            .AddForce(barrelLocation.forward * shotPower);
     }
 
     //This function creates a casing at the ejection slot
@@ -71,18 +136,36 @@ public class SimpleShoot : MonoBehaviour
     {
         //Cancels function if ejection slot hasn't been set or there's no casing
         if (!casingExitLocation || !casingPrefab)
-        { return; }
+        {
+            return;
+        }
 
         //Create the casing
         GameObject tempCasing;
-        tempCasing = Instantiate(casingPrefab, casingExitLocation.position, casingExitLocation.rotation) as GameObject;
+        tempCasing =
+            Instantiate(casingPrefab, casingExitLocation.position, casingExitLocation.rotation)
+            as GameObject;
         //Add force on casing to push it out
-        tempCasing.GetComponent<Rigidbody>().AddExplosionForce(Random.Range(ejectPower * 0.7f, ejectPower), (casingExitLocation.position - casingExitLocation.right * 0.3f - casingExitLocation.up * 0.6f), 1f);
+        tempCasing
+            .GetComponent<Rigidbody>()
+            .AddExplosionForce(
+                Random.Range(ejectPower * 0.7f, ejectPower),
+                (
+                    casingExitLocation.position
+                    - casingExitLocation.right * 0.3f
+                    - casingExitLocation.up * 0.6f
+                ),
+                1f
+            );
         //Add torque to make casing spin in random direction
-        tempCasing.GetComponent<Rigidbody>().AddTorque(new Vector3(0, Random.Range(100f, 500f), Random.Range(100f, 1000f)), ForceMode.Impulse);
+        tempCasing
+            .GetComponent<Rigidbody>()
+            .AddTorque(
+                new Vector3(0, Random.Range(100f, 500f), Random.Range(100f, 1000f)),
+                ForceMode.Impulse
+            );
 
         //Destroy casing after X seconds
         Destroy(tempCasing, destroyTimer);
     }
-
 }
