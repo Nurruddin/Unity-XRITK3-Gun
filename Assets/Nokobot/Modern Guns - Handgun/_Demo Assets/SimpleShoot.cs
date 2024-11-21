@@ -97,13 +97,16 @@ public class SimpleShoot : MonoBehaviour
         else
         {
             source.PlayOneShot(noAmmoSound);
+            // Uncomment to debug
+            Debug.Log("No Ammo");
+            Shoot();
         }
     }
 
     //This function creates the bullet behavior
     void Shoot()
     {
-        magazine.bulletCount--;
+        // magazine.bulletCount--;
         source.PlayOneShot(fireSound);
         if (muzzleFlashPrefab)
         {
