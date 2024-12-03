@@ -24,17 +24,25 @@ public class SimpleShoot : MonoBehaviour
     private Transform casingExitLocation;
 
     [Header("Settings")]
-    [Tooltip("Specify time to destory the casing object")] [SerializeField] private float destroyTimer = 2f;
-    [Tooltip("Bullet Speed")] [SerializeField] private float shotPower = 500f;
-    [Tooltip("Casing Ejection Speed")] [SerializeField] private float ejectPower = 150f;
+    [Tooltip("Specify time to destory the casing object")]
+    [SerializeField]
+    private float destroyTimer = 2f;
+
+    [Tooltip("Bullet Speed")]
+    [SerializeField]
+    private float shotPower = 500f;
+
+    [Tooltip("Casing Ejection Speed")]
+    [SerializeField]private float ejectPower = 150f;
+
     // new code
-    [SerializeField] AudioSource source;
+    [SerializeField]AudioSource source;
 
-    [SerializeField] AudioClip fireSound;
+    [SerializeField]AudioClip fireSound;
 
-    [SerializeField] AudioClip reloadSound;
+    [SerializeField]AudioClip reloadSound;
 
-    [SerializeField] AudioClip noAmmoSound;
+    [SerializeField]AudioClip noAmmoSound;
 
     public Magazine magazine;
     public XRBaseInteractor socketInteractor;
@@ -50,9 +58,8 @@ public class SimpleShoot : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Magazine component not found on the interacted object.");//might need this
+            Debug.LogWarning("Magazine component not found on the interacted object."); //might need this
         }
-
     }
 
     public void RemoveMagazine(SelectExitEventArgs interactable)
@@ -61,10 +68,11 @@ public class SimpleShoot : MonoBehaviour
         source.PlayOneShot(reloadSound);
     }
 
-    public void Slide() {
+    public void Slide()
+    {
         hasSlide = true;
         source.PlayOneShot(reloadSound);
-     }
+    }
 
     void Start()
     {
@@ -73,6 +81,8 @@ public class SimpleShoot : MonoBehaviour
 
         if (gunAnimator == null)
             gunAnimator = GetComponentInChildren<Animator>();
+        else
+            Debug.Log("No animator found");
 
         socketInteractor.selectEntered.AddListener(AddMagazine);
         socketInteractor.selectExited.AddListener(RemoveMagazine);
@@ -92,21 +102,23 @@ public class SimpleShoot : MonoBehaviour
     {
         if (magazine && magazine.bulletCount > 0 && hasSlide)
         {
-            gunAnimator.SetTrigger("Fire");
+            if (gunAnimator)
+                gunAnimator.SetTrigger("Fire");
+            else
+                Shoot();
         }
         else
         {
             source.PlayOneShot(noAmmoSound);
             // Uncomment to debug
-            Debug.Log("No Ammo");
-            Shoot();
+            // Debug.Log("No Ammo");
         }
     }
 
     //This function creates the bullet behavior
     void Shoot()
     {
-        // magazine.bulletCount--;
+        magazine.bulletCount--;
         source.PlayOneShot(fireSound);
         if (muzzleFlashPrefab)
         {
