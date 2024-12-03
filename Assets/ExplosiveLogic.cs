@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class ExplosiveLogic : MonoBehaviour
 {
+        public XRBaseInteractor socketInteractor;
+
     // Start is called before the first frame update
     void Start()
     {

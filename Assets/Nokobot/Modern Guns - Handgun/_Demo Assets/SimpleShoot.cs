@@ -37,20 +37,16 @@ public class SimpleShoot : MonoBehaviour
 
     // new code
     [SerializeField]AudioSource source;
-
     [SerializeField]AudioClip fireSound;
-
     [SerializeField]AudioClip reloadSound;
-
     [SerializeField]AudioClip noAmmoSound;
-
     public Magazine magazine;
     public XRBaseInteractor socketInteractor;
     private bool hasSlide = true;
 
     public void AddMagazine(SelectEnterEventArgs interactable)
     {
-        magazine = interactable.interactableObject.transform.gameObject.GetComponent<Magazine>();
+        magazine = interactable.interactableObject.transform.gameObject.GetComponent<Magazine>();//assign the attached object's magazine.cs
         if (magazine != null)
         {
             source.PlayOneShot(reloadSound);
