@@ -1,5 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -36,12 +37,15 @@ public class SimpleShoot : MonoBehaviour
     [SerializeField]private float ejectPower = 150f;
 
     // new code
+    [Header("Audio")]
     [SerializeField]AudioSource source;
     [SerializeField]AudioClip fireSound;
     [SerializeField]AudioClip reloadSound;
     [SerializeField]AudioClip noAmmoSound;
-    public Magazine magazine;
+    [Header("Magazine Socket")]
+    [Tooltip("The socket that the magazine attaches to")]
     public XRBaseInteractor socketInteractor;
+    private Magazine magazine;
     private bool hasSlide = true;
 
     public void AddMagazine(SelectEnterEventArgs interactable)
@@ -54,7 +58,7 @@ public class SimpleShoot : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Magazine component not found on the interacted object."); //might need this
+            Debug.LogWarning("Magazine component not found on the attached object."); //might need this
         }
     }
 
@@ -86,7 +90,7 @@ public class SimpleShoot : MonoBehaviour
 
     void Update()
     {
-        //If you want a different input, change it here
+        // Uncomment for legacy input method
         // if (Input.GetButtonDown("Fire1"))
         // {
         //     //Calls animation on the gun that has the relevant animation events that will fire
@@ -140,6 +144,10 @@ public class SimpleShoot : MonoBehaviour
         Instantiate(bulletPrefab, barrelLocation.position, barrelLocation.rotation)
             .GetComponent<Rigidbody>()
             .AddForce(barrelLocation.forward * shotPower);
+    }
+
+    private void OnCollisionEnter(Collision other) {
+        
     }
 
     //This function creates a casing at the ejection slot

@@ -4,7 +4,8 @@ using UnityEngine.Events;
 public class OnTargetReached : MonoBehaviour
 {
     // public ConfigurableJoint joint;
-    public float threshold = 0.02f;//between slider object and target
+    [Tooltip("Max distance between object and target")]
+    public float threshold = 0.02f;
     public Transform target;
     public UnityEvent onReached;
     private bool wasReached = false;
